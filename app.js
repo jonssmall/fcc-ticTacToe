@@ -20,9 +20,24 @@ var Player = function(marker) {
 };
 
 Player.prototype.placeMarker = function(square) {
-	if(square.isOccupied) {
+	if(square.isOccupied()) {
 		//TODO: some type of error / blocked action
+		console.log("space occupied for square " + square.place);
 	} else {
 		square.marker = this.marker;
+		console.log("success");
 	}
+};
+
+var AI = function(marker) {
+	Player.call(this, marker);
+};
+
+AI.prototype = Object.create(Player.prototype);
+AI.prototype.constructor = AI;
+
+
+AI.prototype.executeMove = function() {
+	var randomPlace = Math.floor(Math.random() * (9)); //0 to 8
+	this.placeMarker(board[randomPlace]);
 };
