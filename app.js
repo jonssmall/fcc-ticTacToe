@@ -6,6 +6,16 @@ var Square = function (place) {
 Square.prototype.isOccupied = function() {
 	return this.marker ? true : false;
 };
+//todo: refactor poor man's dependency injection
+Square.prototype.generateElement = function(gameInstance) {
+	var squareScope = this;
+	var squareElement = document.createElement("div");
+	squareElement.setAttribute("class", "square");
+	squareElement.addEventListener("click", function() {		
+		gameInstance.commenceTurn(squareScope);
+	});
+	gameInstance.boardElement.appendChild(squareElement);
+};
 
 var Player = function(marker) {
 	this.marker = marker;
@@ -25,7 +35,7 @@ Player.prototype.placeMarker = function(square) {
 };
 
 Player.prototype.executeMove = function(square) {
-	this.placeMarker(square);
+	return this.placeMarker(square);
 }
 
 var AI = function(marker) {
@@ -41,7 +51,8 @@ AI.prototype.executeMove = function() {
 	while (!stopFlag) {
 		var randomPlace = Math.floor(Math.random() * (9)); //0 to 8
 		stopFlag = this.placeMarker(game.board[randomPlace]); //todo: decouple game instance
-	}	
+	}
+	return stopFlag;
 };
 
 var Game = function() {
@@ -56,12 +67,15 @@ var Game = function() {
 
 Game.prototype.createBoard = function() {
 	this.board = [];
+	this.boardElement = document.createElement("div");
+	this.boardElement.setAttribute("id", "board");
 
-	for (var i = 1; i < 10; i++) {	
-		this.board.push(new Square(i));
+	for (var i = 1; i < 10; i++) {
+		var square = new Square(i);
+		square.generateElement(this);
+		this.board.push(square);
 	}
-
-	console.log(this.board);	
+	document.body.appendChild(this.boardElement);	
 };
 
 Game.prototype.awardVictory = function(player) {
@@ -98,18 +112,21 @@ Game.prototype.checkVictory = function() {
 	}
 };
 
-Game.prototype.commenceTurn = function(square) {
-	this.currentPlayer.executeMove(square); //null and uncessary when AI.executeMove;
-	if (this.checkVictory()) {
-		this.awardVictory(this.currentPlayer);
-		console.log("Resetting Board...");
-		this.createBoard();
-		this.currentPlayer = human;
-	} else {
-		this.currentPlayer = this.currentPlayer == human ? ai : human;
-		if(this.currentPlayer == ai) {
-			this.commenceTurn();
+Game.prototype.commenceTurn = function(square) {	
+	if (this.currentPlayer.executeMove(square)) { //square arg null and unecessary when AI.executeMove;
+		if (this.checkVictory()) {
+			this.awardVictory(this.currentPlayer);
+			console.log("Resetting Board...");
+			this.createBoard();
+			this.currentPlayer = human;
+		} else {
+			this.currentPlayer = this.currentPlayer == human ? ai : human;
+			if(this.currentPlayer == ai) {
+				this.commenceTurn();
+			}
 		}
+	} else {
+		alert("Space occupied. Pick another.");
 	}
 };
 

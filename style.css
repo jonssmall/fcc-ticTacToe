@@ -1,3 +1,17 @@
 body {
-	background-color:grey;
+	/*background-color:grey;*/
+}
+
+#board {
+	height: 160px;
+	width: 160px;
+	border: 1px solid black;
+}
+
+.square {
+	height: 50px;
+	width: 50px;
+	background-color: green;
+	border: 1px solid black;
+	display: inline-block;
 }
